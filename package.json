@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:backend\"",
     "dev:vite": "vite",
-    "dev:backend": "cd backend && python main_flask.py",
+    "dev:backend": "cd backend && venv\\Scripts\\python main_flask.py",
     "dev:electron": "cross-env NODE_ENV=development electron .",
     "dev:all": "concurrently \"npm run dev:vite\" \"npm run dev:backend\" \"wait-on http://localhost:5173 && npm run dev:electron\"",
     "build": "vite build && electron-builder",

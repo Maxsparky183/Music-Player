@@ -79,34 +79,59 @@ def get_audio_stream():
     """Extract audio stream URL using yt-dlp"""
     try:
         data = request.get_json()
+        if not data:
+            logger.error("No JSON data received")
+            return jsonify({"error": "No data received"}), 400
+            
         video_id = data.get('video_id', '')
+        if not video_id:
+            logger.error("No video_id provided")
+            return jsonify({"error": "No video_id provided"}), 400
+        
+        logger.info(f"Extracting audio for video_id: {video_id}")
         
         ydl_opts = {
             'format': 'bestaudio/best',
-            'quiet': True,
-            'no_warnings': True,
+            'quiet': False,
+            'no_warnings': False,
             'extract_flat': False,
+            'ignoreerrors': True,
         }
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            logger.info(f"Starting extraction for: https://www.youtube.com/watch?v={video_id}")
             info = ydl.extract_info(
                 f"https://www.youtube.com/watch?v={video_id}",
                 download=False
             )
             
+            logger.info(f"Extraction result: {info is not None}")
+            
             if not info:
+                logger.error("Video not found")
                 return jsonify({"error": "Video not found"}), 404
             
             # Find the best audio format
             formats = info.get('formats', [])
+            logger.info(f"Total formats: {len(formats)}")
+            
             audio_formats = [f for f in formats if f.get('acodec') != 'none']
+            logger.info(f"Audio formats: {len(audio_formats)}")
             
             if not audio_formats:
+                logger.error("No audio formats available")
                 return jsonify({"error": "No audio formats available"}), 404
             
-            # Sort by quality (bitrate)
+            # Filter out formats with None abr and sort by quality (bitrate)
+            audio_formats = [f for f in audio_formats if f.get('abr') is not None]
+            if not audio_formats:
+                logger.error("No audio formats with valid bitrate")
+                return jsonify({"error": "No audio formats with valid bitrate"}), 404
+            
             audio_formats.sort(key=lambda x: x.get('abr', 0), reverse=True)
             best_format = audio_formats[0]
+            
+            logger.info(f"Best format: {best_format.get('format')}, URL: {best_format.get('url')[:50] if best_format.get('url') else 'None'}...")
             
             return jsonify({
                 "video_id": video_id,
@@ -130,15 +155,19 @@ def get_audio_stream():
             return jsonify({"error": f"Extraction failed: {str(e)}"}), 500
     except Exception as e:
         logger.error(f"Audio extraction error: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
         return jsonify({"error": f"Audio extraction failed: {str(e)}"}), 500
 
 @app.route('/api/trending')
 def get_trending():
     """Get trending tracks from YouTube Music"""
     if not ytmusic:
-        return jsonify({"error": "YouTube Music API not initialized"}), 503
+        logger.warning("YouTube Music API not initialized, returning empty trending")
+        return jsonify([])
     
     try:
+        logger.info("Fetching trending tracks")
         results = ytmusic.get_trending(limit=20)
         
         tracks = []
@@ -155,10 +184,14 @@ def get_trending():
                 }
                 tracks.append(track)
         
+        logger.info(f"Found {len(tracks)} trending tracks")
         return jsonify(tracks)
     except Exception as e:
         logger.error(f"Trending error: {e}")
-        return jsonify({"error": f"Failed to get trending: {str(e)}"}), 500
+        import traceback
+        logger.error(traceback.format_exc())
+        # Return empty array instead of error to allow app to continue
+        return jsonify([])
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)

@@ -31,15 +31,18 @@ export class MusicAPI {
 
   // Get audio stream URL from backend
   static async getAudioStream(videoId: string): Promise<any> {
+    console.log('Requesting audio for video_id:', videoId);
     try {
       const response = await axios.post(`${BACKEND_API}/api/audio`, {
         video_id: videoId,
         quality: 'best'
       }, { timeout: 30000 });
 
+      console.log('Audio extraction response:', response.data);
       return response.data;
     } catch (error: any) {
       console.error('Audio extraction error:', error);
+      console.error('Error response:', error.response?.data);
       if (error.response?.status === 403) {
         throw new Error('Age-restricted or geo-blocked content');
       } else if (error.response?.status === 404) {
