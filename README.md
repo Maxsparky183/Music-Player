@@ -76,29 +76,3 @@ Use the search bar to find music across multiple platforms. Results are aggregat
 ## License
 
 MIT License - Feel free to use and modify as needed.
-
-
-
-
-Tech Stack Overview
-Based on package.json and requirements.txt, this project uses #a modern desktop-first stack:
-
-Frontend:
-
-Electron for the cross-platform desktop app shell
-React + TypeScript for the UI
-Vite for fast development and build tooling
-Tailwind CSS for styling
-React Router for page navigation
-Zustand for state management
-Howler.js for audio playback
-Lucide React for icons
-Backend:
-
-Python with Flask for the API service
-yt-dlp and ytmusicapi for music search and audio extraction
-Development & Packaging:
-
-concurrently, cross-env, and wait-on for running services together
-electron-builder for packaging the app for Windows, macOS, and Linux
-In short, it is a React + Electron + TypeScript app with a Python Flask backend for music streaming features.
