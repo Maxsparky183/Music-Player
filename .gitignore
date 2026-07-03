@@ -1,1 +1,8 @@
 node_modules
+dist
+backend/venv
+backend/oauth.json
+backend/cookies.txt
+.env
+*.log
+.DS_Store
