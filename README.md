@@ -1,10 +1,10 @@
-# Nuclear Music Player
+# Sonic Music Player
 
 A cross-platform desktop music streaming application with a modern, dark-mode, ad-free interface. No user accounts or subscriptions required.
 
 ## Features
 
-- **Aggregated Search Engine**: Search across YouTube, SoundCloud, and Bandcamp simultaneously
+- **Aggregated Search Engine**: Search across YouTube
 - **Media Player Controls**: Full playback controls (play, pause, skip, shuffle, repeat) with volume slider
 - **Smart Playlists**: Create, save, and export local playlists
 - **Lyrics Integration**: Automatic lyrics fetching and display
