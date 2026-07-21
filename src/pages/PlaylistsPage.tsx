@@ -5,9 +5,10 @@ import { TrackCard } from '../components/TrackCard';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Plus, Trash2, Download, Upload } from 'lucide-react';
+import { Track } from '../types';
 
 export const PlaylistsPage: React.FC = () => {
-  const { playlists, currentPlaylist, createPlaylist, deletePlaylist, addToPlaylist, removeFromPlaylist, setCurrentPlaylist, exportPlaylist, importPlaylist } = usePlaylistStore();
+  const { playlists, currentPlaylist, createPlaylist, deletePlaylist, removeFromPlaylist, setCurrentPlaylist, exportPlaylist, importPlaylist } = usePlaylistStore();
   const { setCurrentTrack, setQueue } = usePlayerStore();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
@@ -149,7 +150,7 @@ export const PlaylistsPage: React.FC = () => {
                 </div>
                 <Button
                   variant="icon"
-                  onClick={() => removeFromPlaylist(currentPlaylist.id, track.id)}
+                  onClick={() => removeFromPlaylist(currentPlaylist!.id, track.id)}
                 >
                   <Trash2 size={16} className="text-accent" />
                 </Button>

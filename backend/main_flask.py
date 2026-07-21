@@ -4,6 +4,9 @@ import yt_dlp
 import ytmusicapi
 import logging
 from datetime import datetime
+import os
+import json
+from pathlib import Path
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -29,6 +32,22 @@ def init_ytmusic():
 
 # Initialize on startup
 init_ytmusic()
+
+# Data storage paths
+DATA_DIR = Path(__file__).parent.parent / 'data'
+PLAYLISTS_FILE = DATA_DIR / 'playlists.json'
+DATA_DIR.mkdir(exist_ok=True)
+PLAYLISTS_FILE.touch(exist_ok=True)
+
+def load_playlists():
+    if PLAYLISTS_FILE.stat().st_size > 0:
+        with open(PLAYLISTS_FILE, 'r') as f:
+            return json.load(f)
+    return {"playlists": []}
+
+def save_playlists(playlists_data):
+    with open(PLAYLISTS_FILE, 'w') as f:
+        json.dump(playlists_data, f, indent=2)
 
 @app.route('/')
 def root():

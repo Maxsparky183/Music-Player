@@ -29,7 +29,7 @@ export interface Lyrics {
 }
 
 export interface SearchResult {
-  source: 'youtube' | 'soundcloud' | 'bandcamp';
+  source: 'youtube';
   tracks: Track[];
 }
 

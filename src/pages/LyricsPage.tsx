@@ -7,6 +7,7 @@ export const LyricsPage: React.FC = () => {
   const { currentTrack } = usePlayerStore();
   const [lyrics, setLyrics] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (currentTrack) {
@@ -20,12 +21,14 @@ export const LyricsPage: React.FC = () => {
     if (!currentTrack) return;
     
     setLoading(true);
+    setError(null);
     try {
       const lyricsText = await LyricsAPI.getLyrics(currentTrack);
       setLyrics(lyricsText);
     } catch (error) {
       console.error('Error loading lyrics:', error);
-      setLyrics('Lyrics not available');
+      setLyrics('');
+      setError(error instanceof Error ? error.message : 'Lyrics could not be loaded.');
     } finally {
       setLoading(false);
     }
@@ -52,11 +55,14 @@ export const LyricsPage: React.FC = () => {
               <Loader2 className="animate-spin text-primary" size={48} />
             </div>
           ) : (
-            <div className="bg-surfaceHighlight rounded-lg p-6">
-              <pre className="whitespace-pre-wrap font-sans text-text leading-relaxed">
-                {lyrics}
-              </pre>
-            </div>
+            <>
+              {error && <p role="alert" className="mb-4 rounded-lg border border-accent/40 bg-accent/10 p-4 text-accent">{error}</p>}
+              <div className="bg-surfaceHighlight rounded-lg p-6">
+                <pre className="whitespace-pre-wrap font-sans text-text leading-relaxed">
+                  {lyrics || 'Lyrics are not available for this track.'}
+                </pre>
+              </div>
+            </>
           )}
         </div>
       )}

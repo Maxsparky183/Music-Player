@@ -1,8 +1,16 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { Track, SearchResult } from '../types';
 
 // Python Backend API
 const BACKEND_API = 'http://localhost:8000';
+
+const backendErrorMessage = (error: unknown) => {
+  if (error instanceof AxiosError && !error.response) {
+    return 'Music service is unavailable. Start the backend and try again.';
+  }
+
+  return 'The music service could not complete that request. Please try again.';
+};
 
 export class MusicAPI {
   // Search tracks using Python backend
@@ -25,7 +33,7 @@ export class MusicAPI {
       }));
     } catch (error) {
       console.error('Search error:', error);
-      return [];
+      throw new Error(backendErrorMessage(error));
     }
   }
 
@@ -47,8 +55,10 @@ export class MusicAPI {
         throw new Error('Age-restricted or geo-blocked content');
       } else if (error.response?.status === 404) {
         throw new Error('Video not found or no audio available');
+      } else if (!error.response) {
+        throw new Error('Music service is unavailable. Start the backend and try again.');
       } else {
-        throw new Error('Failed to extract audio stream');
+        throw new Error('Unable to prepare this track for playback. Please try another track.');
       }
     }
   }
@@ -70,31 +80,14 @@ export class MusicAPI {
       }));
     } catch (error) {
       console.error('Trending error:', error);
-      return [];
+      throw new Error(backendErrorMessage(error));
     }
   }
 
-  // Search SoundCloud (disabled - would need separate backend service)
-  static async searchSoundCloud(query: string): Promise<Track[]> {
-    return [];
-  }
-
-  // Search Bandcamp (disabled - would need separate backend service)
-  static async searchBandcamp(query: string): Promise<Track[]> {
-    return [];
-  }
-
-  // Aggregated search
+  // YouTube Music is the only enabled search provider at present.
   static async searchAll(query: string): Promise<SearchResult[]> {
     const youtube = await this.searchYouTube(query);
-    const soundcloud = await this.searchSoundCloud(query);
-    const bandcamp = await this.searchBandcamp(query);
-
-    return [
-      { source: 'youtube', tracks: youtube },
-      { source: 'soundcloud', tracks: soundcloud },
-      { source: 'bandcamp', tracks: bandcamp }
-    ];
+    return [{ source: 'youtube', tracks: youtube }];
   }
 
   // Get music by genre (uses search with genre query)
@@ -107,25 +100,13 @@ export class MusicAPI {
 export class LyricsAPI {
   static async getLyrics(track: Track): Promise<string> {
     try {
-      // Using a free lyrics API - in production, use a proper lyrics API
-      const query = encodeURIComponent(`${track.title} ${track.artist}`);
       const response = await axios.get(`https://api.lyrics.ovh/v1/${track.artist}/${track.title}`);
       
       return response.data.lyrics || 'Lyrics not found';
     } catch (error) {
       console.error('Lyrics error:', error);
-      return 'Lyrics not available';
+      throw new Error('Lyrics are unavailable for this track.');
     }
   }
 
-  static async getSyncedLyrics(track: Track): Promise<any[]> {
-    try {
-      // Placeholder for synced lyrics - would need a different API
-      const lyrics = await this.getLyrics(track);
-      return [];
-    } catch (error) {
-      console.error('Synced lyrics error:', error);
-      return [];
-    }
-  }
 }

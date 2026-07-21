@@ -9,19 +9,21 @@ import { Loader2 } from 'lucide-react';
 export const SearchPage: React.FC = () => {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { setCurrentTrack, setQueue, addToQueue } = usePlayerStore();
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) return;
     
     setLoading(true);
+    setError(null);
     try {
       const searchResults = await MusicAPI.searchAll(query);
       setResults(searchResults);
     } catch (error) {
       console.error('Search error:', error);
-      // Show error message to user
       setResults([]);
+      setError(error instanceof Error ? error.message : 'Search failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -50,6 +52,12 @@ export const SearchPage: React.FC = () => {
         </div>
       )}
 
+      {!loading && error && (
+        <div role="alert" className="rounded-lg border border-accent/40 bg-accent/10 p-4 text-accent">
+          {error}
+        </div>
+      )}
+
       {!loading && results.length > 0 && (
         <div className="space-y-8">
           {results.map((result) => (
@@ -74,10 +82,10 @@ export const SearchPage: React.FC = () => {
         </div>
       )}
 
-      {!loading && results.length === 0 && (
+      {!loading && !error && results.length === 0 && (
         <div className="text-center py-12 text-textSecondary">
-          <p>Search for music across YouTube, SoundCloud, and Bandcamp</p>
-          <p className="text-sm mt-2">Note: If no results appear, the Invidious instances may be temporarily down. Try again later.</p>
+          <p>Search YouTube Music for tracks to play.</p>
+          <p className="text-sm mt-2">Results are supplied by the local music backend.</p>
         </div>
       )}
     </div>

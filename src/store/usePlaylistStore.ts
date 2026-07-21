@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { Playlist, Track } from '../types';
 
 interface PlaylistStore {
@@ -8,12 +9,12 @@ interface PlaylistStore {
   deletePlaylist: (id: string) => void;
   addToPlaylist: (playlistId: string, track: Track) => void;
   removeFromPlaylist: (playlistId: string, trackId: string) => void;
-  setCurrentPlaylist: (playlist: Playlist) => void;
+  setCurrentPlaylist: (playlist: Playlist | null) => void;
   exportPlaylist: (playlistId: string) => string;
   importPlaylist: (data: any) => void;
 }
 
-export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
+export const usePlaylistStore = create<PlaylistStore>()(persist((set, get) => ({
   playlists: [],
   currentPlaylist: null,
 
@@ -75,4 +76,10 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
       console.error('Error importing playlist:', error);
     }
   }
+}), {
+  name: 'nuclear-playlists',
+  partialize: (state) => ({
+    playlists: state.playlists,
+    currentPlaylist: state.currentPlaylist
+  })
 }));

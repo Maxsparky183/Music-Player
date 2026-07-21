@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { Howl } from 'howler';
 import { Track, PlayerState } from '../types';
 import { MusicAPI } from '../services/api';
@@ -16,13 +17,18 @@ interface PlayerStore extends PlayerState {
   setQueue: (tracks: Track[]) => void;
   addToQueue: (track: Track) => void;
   removeFromQueue: (index: number) => void;
+  reorderQueue: (fromIndex: number, toIndex: number) => void;
   clearQueue: () => void;
+  history: Track[];
+  clearHistory: () => void;
   howl: Howl | null;
   isLoading: boolean;
   error: string | null;
 }
 
-export const usePlayerStore = create<PlayerStore>((set, get) => ({
+const toLocalFileUrl = (path: string) => encodeURI(`file:///${path.replace(/\\/g, '/')}`);
+
+export const usePlayerStore = create<PlayerStore>()(persist((set, get) => ({
   currentTrack: null,
   isPlaying: false,
   volume: 0.8,
@@ -35,6 +41,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   howl: null,
   isLoading: false,
   error: null,
+  history: [],
 
   setCurrentTrack: async (track) => {
     const { howl } = get();
@@ -42,18 +49,25 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
       howl.unload();
     }
 
-    set({ currentTrack: track, isLoading: true, error: null, progress: 0 });
+    set((state) => ({
+      currentTrack: track,
+      isLoading: true,
+      error: null,
+      progress: 0,
+      history: [track, ...state.history.filter((item) => item.id !== track.id)].slice(0, 100)
+    }));
 
     try {
-      // Get audio stream URL from Python backend
-      const audioData = await MusicAPI.getAudioStream(track.id);
-      
-      if (!audioData.audio_url) {
-        throw new Error('No audio URL available');
-      }
+      const source = track.source === 'local'
+        ? track.path
+          ? toLocalFileUrl(track.path)
+          : (() => { throw new Error('This local track no longer has a file path. Scan its folder again.'); })()
+        : (await MusicAPI.getAudioStream(track.id)).audio_url;
+
+      if (!source) throw new Error('No playable audio source is available for this track.');
 
       const newHowl = new Howl({
-        src: [audioData.audio_url],
+        src: [source],
         html5: true,
         volume: get().volume,
         format: ['mp3', 'webm', 'm4a'],
@@ -71,13 +85,13 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
           const duration = newHowl.duration();
           set({ duration, isLoading: false });
         },
-        onloaderror: (id, error) => {
+        onloaderror: (_id, error) => {
           console.error('Error loading audio:', error);
-          set({ isLoading: false, error: 'Failed to load audio' });
+          set({ isLoading: false, error: 'Unable to load this audio file or stream.' });
         },
-        onplayerror: (id, error) => {
+        onplayerror: (_id, error) => {
           console.error('Error playing audio:', error);
-          set({ isLoading: false, error: 'Failed to play audio' });
+          set({ isLoading: false, error: 'Playback was blocked or the audio source is no longer available.' });
         }
       });
 
@@ -104,7 +118,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   },
 
   next: () => {
-    const { queue, currentIndex, isShuffle, repeatMode } = get();
+    const { queue, currentIndex, isShuffle } = get();
     let nextIndex;
 
     if (isShuffle) {
@@ -167,7 +181,32 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     }));
   },
 
+  reorderQueue: (fromIndex, toIndex) => {
+    set((state) => {
+      if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= state.queue.length || toIndex >= state.queue.length) return state;
+      const queue = [...state.queue];
+      const [movedTrack] = queue.splice(fromIndex, 1);
+      queue.splice(toIndex, 0, movedTrack);
+      const currentTrackIndex = queue.findIndex((track) => track.id === state.currentTrack?.id);
+      return { queue, currentIndex: Math.max(currentTrackIndex, 0) };
+    });
+  },
+
   clearQueue: () => {
     set({ queue: [], currentIndex: 0 });
+  },
+
+  clearHistory: () => {
+    set({ history: [] });
   }
+}), {
+  name: 'nuclear-player',
+  partialize: (state) => ({
+    volume: state.volume,
+    isShuffle: state.isShuffle,
+    repeatMode: state.repeatMode,
+    queue: state.queue,
+    currentIndex: state.currentIndex,
+    history: state.history
+  })
 }));

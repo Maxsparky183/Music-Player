@@ -4,6 +4,7 @@ import { usePlayerStore } from '../store/usePlayerStore';
 import { Slider } from './Slider';
 import { Button } from './Button';
 import { cn } from '../utils/cn';
+import { QueueDrawer } from './QueueDrawer';
 
 export const PlayerControls: React.FC = () => {
   const {
@@ -131,6 +132,7 @@ export const PlayerControls: React.FC = () => {
 
           {/* Volume control */}
           <div className="flex items-center gap-3 flex-1 justify-end">
+            <QueueDrawer />
             <Volume2 size={20} className="text-textSecondary" />
             <div className="w-32">
               <Slider value={volume * 100} onChange={(v) => setVolume(v / 100)} />

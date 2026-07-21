@@ -12,6 +12,7 @@ export const DiscoverPage: React.FC = () => {
   const [genreTracks, setGenreTracks] = useState<Record<string, Track[]>>({});
   const [loading, setLoading] = useState(true);
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { setCurrentTrack, setQueue, addToQueue } = usePlayerStore();
 
   useEffect(() => {
@@ -20,11 +21,13 @@ export const DiscoverPage: React.FC = () => {
 
   const loadTrending = async () => {
     setLoading(true);
+    setError(null);
     try {
       const trendingTracks = await MusicAPI.getTrending();
       setTrending(trendingTracks);
     } catch (error) {
       console.error('Error loading trending:', error);
+      setError(error instanceof Error ? error.message : 'Unable to load discovery music.');
     } finally {
       setLoading(false);
     }
@@ -32,11 +35,13 @@ export const DiscoverPage: React.FC = () => {
 
   const loadGenre = async (genre: string) => {
     setSelectedGenre(genre);
+    setError(null);
     try {
       const tracks = await MusicAPI.getByGenre(genre);
       setGenreTracks(prev => ({ ...prev, [genre]: tracks }));
     } catch (error) {
       console.error('Error loading genre:', error);
+      setError(error instanceof Error ? error.message : 'Unable to load this genre.');
     }
   };
 
@@ -60,6 +65,12 @@ export const DiscoverPage: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-8">
+          {error && (
+            <div role="alert" className="rounded-lg border border-accent/40 bg-accent/10 p-4 text-accent">
+              {error}
+              <button onClick={loadTrending} className="ml-3 underline">Retry</button>
+            </div>
+          )}
           {/* Trending Section */}
           <section>
             <div className="flex items-center gap-2 mb-4">

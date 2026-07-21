@@ -8,16 +8,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#0a0a0a',
-        surface: '#141414',
-        surfaceHighlight: '#1e1e1e',
-        primary: '#8b5cf6',
-        primaryHover: '#7c3aed',
-        secondary: '#06b6d4',
-        accent: '#f43f5e',
-        text: '#fafafa',
-        textSecondary: '#a1a1aa',
-        border: '#27272a'
+        background: 'rgb(var(--color-background) / <alpha-value>)',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
+        surfaceHighlight: 'rgb(var(--color-surface-highlight) / <alpha-value>)',
+        primary: 'rgb(var(--color-primary) / <alpha-value>)',
+        primaryHover: 'rgb(var(--color-primary-hover) / <alpha-value>)',
+        secondary: 'rgb(var(--color-secondary) / <alpha-value>)',
+        accent: 'rgb(var(--color-accent) / <alpha-value>)',
+        text: 'rgb(var(--color-text) / <alpha-value>)',
+        textSecondary: 'rgb(var(--color-text-secondary) / <alpha-value>)',
+        border: 'rgb(var(--color-border) / <alpha-value>)'
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
