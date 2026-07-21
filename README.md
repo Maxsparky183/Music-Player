@@ -1,4 +1,4 @@
-# Nuclear Music Player
+# Sonic Music Player
 
 A cross-platform desktop music streaming application with a modern, dark-mode, ad-free interface. No user accounts or subscriptions required.
 

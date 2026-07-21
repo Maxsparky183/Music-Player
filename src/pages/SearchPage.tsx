@@ -5,15 +5,18 @@ import { TrackCard } from '../components/TrackCard';
 import { usePlayerStore } from '../store/usePlayerStore';
 import { SearchBar } from '../components/SearchBar';
 import { Loader2 } from 'lucide-react';
+import { useLibraryStore } from '../store/useLibraryStore';
 
 export const SearchPage: React.FC = () => {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { setCurrentTrack, setQueue, addToQueue } = usePlayerStore();
+  const saveSearch = useLibraryStore((state) => state.saveSearch);
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) return;
+    saveSearch(query.trim());
     
     setLoading(true);
     setError(null);

@@ -51,7 +51,7 @@ def save_playlists(playlists_data):
 
 @app.route('/')
 def root():
-    return jsonify({"status": "ok", "service": "Nuclear Music Player Backend"})
+    return jsonify({"status": "ok", "service": "Sonic Music Player Backend"})
 
 @app.route('/health')
 def health():

@@ -22,7 +22,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) =
   return (
     <div className="w-64 bg-surface border-r border-border p-4 flex flex-col">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-primary">Nuclear</h1>
+        <h1 className="text-2xl font-bold text-primary">Sonic</h1>
         <p className="text-sm text-textSecondary">Music Player</p>
       </div>
 
