@@ -5,7 +5,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ReactNode;
 }
 
-export const Input: React.FC<InputProps> = ({ className, icon, ...props }) => {
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, icon, ...props }, ref) => {
   return (
     <div className="relative">
       {icon && (
@@ -14,6 +14,7 @@ export const Input: React.FC<InputProps> = ({ className, icon, ...props }) => {
         </div>
       )}
       <input
+        ref={ref}
         className={cn(
           'w-full h-10 px-4 rounded-lg bg-surfaceHighlight border border-border text-text placeholder:text-textSecondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors',
           icon && 'pl-10',
@@ -23,4 +24,6 @@ export const Input: React.FC<InputProps> = ({ className, icon, ...props }) => {
       />
     </div>
   );
-};
+});
+
+Input.displayName = 'Input';

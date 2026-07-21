@@ -1,7 +1,8 @@
 import React from 'react';
 import { Track } from '../types';
-import { Play, Plus } from 'lucide-react';
+import { Heart, Play, Plus } from 'lucide-react';
 import { cn } from '../utils/cn';
+import { useLibraryStore } from '../store/useLibraryStore';
 
 interface TrackCardProps {
   track: Track;
@@ -16,6 +17,8 @@ export const TrackCard: React.FC<TrackCardProps> = ({
   onAddToQueue,
   isCurrent = false
 }) => {
+  const { favoriteTracks, toggleTrack } = useLibraryStore();
+  const isFavorite = favoriteTracks.some((item) => item.id === track.id);
   return (
     <div
       className={cn(
@@ -51,6 +54,14 @@ export const TrackCard: React.FC<TrackCardProps> = ({
           {track.source}
         </span>
       )}
+
+      <button
+        aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        onClick={(event) => { event.stopPropagation(); toggleTrack(track); }}
+        className={cn('p-2 hover:bg-surface rounded-lg', isFavorite ? 'text-accent' : 'text-textSecondary')}
+      >
+        <Heart size={16} className={cn(isFavorite && 'fill-current')} />
+      </button>
       
       {onAddToQueue && (
         <button
